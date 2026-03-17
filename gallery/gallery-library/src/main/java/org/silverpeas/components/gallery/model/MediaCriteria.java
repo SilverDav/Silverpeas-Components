@@ -74,18 +74,6 @@ public class MediaCriteria {
       this.asc = asc;
     }
 
-    public static QUERY_ORDER_BY fromPropertyName(String property, String sort) {
-      QUERY_ORDER_BY orderBy = null;
-      for (QUERY_ORDER_BY queryOrderBy : values()) {
-        String orderByName = queryOrderBy.name().toLowerCase();
-        if (orderByName.startsWith(property.toLowerCase()) &&
-            orderByName.endsWith(sort.toLowerCase())) {
-          orderBy = queryOrderBy;
-        }
-      }
-      return orderBy;
-    }
-
     public boolean isApplicableOnSQLQuery() {
       return applicableOnSQLQuery;
     }
@@ -102,7 +90,6 @@ public class MediaCriteria {
   private UserDetail requester;
   private SilverpeasRole componentHighestRequesterRole;
   private String componentInstanceId;
-  private UserDetail creator;
   private final List<String> albumIds = new ArrayList<>();
   private final List<MediaType> mediaTypes = new ArrayList<>();
   private final List<QUERY_ORDER_BY> orderByList = new ArrayList<>();
@@ -175,16 +162,6 @@ public class MediaCriteria {
   }
 
   /**
-   * Sets the creator criterion to find media created by the given user.
-   * @param user the user that must be the creator of the media(s).
-   * @return the media criteria itself with the new criterion on the media creator.
-   */
-  public MediaCriteria createdBy(UserDetail user) {
-    this.creator = user;
-    return this;
-  }
-
-  /**
    * Sets the list of media album identifiers criterion to find media which are attached to one of
    * the given ones.
    * @param albumIds the media album identifier list that the media must be attached.
@@ -208,11 +185,11 @@ public class MediaCriteria {
 
   /**
    * Configures the order of the media list.
-   * @param orderBies the list of order by directives.
+   * @param orderBys the list of order by directives.
    * @return the media criteria itself with the list ordering criterion.
    */
-  public MediaCriteria orderedBy(QUERY_ORDER_BY... orderBies) {
-    CollectionUtil.addAllIgnoreNull(this.orderByList, orderBies);
+  public MediaCriteria orderedBy(QUERY_ORDER_BY... orderBys) {
+    CollectionUtil.addAllIgnoreNull(this.orderByList, orderBys);
     return this;
   }
 
@@ -274,7 +251,7 @@ public class MediaCriteria {
   }
 
   /**
-   * Gets the indetifier of media instance. {@link #fromComponentInstanceId(String)}
+   * Gets the identifier of media instance. {@link #fromComponentInstanceId(String)}
    * @return the criterion on the media instance to which the medias should belong.
    */
   public String getComponentInstanceId() {
@@ -302,13 +279,6 @@ public class MediaCriteria {
     return componentHighestRequesterRole;
   }
 
-  /**
-   * Gets the creator criteria value. {@link #createdBy(UserDetail)}
-   * @return the criterion on the creator of the medias.
-   */
-  private UserDetail getCreator() {
-    return creator;
-  }
 
   /**
    * Gets the media album identifier criteria value. {@link #albumIdentifierIsOneOf(String...)}
@@ -367,9 +337,9 @@ public class MediaCriteria {
   }
 
   /**
-   * Processes this criteria with the specified processor. It chains in a given order the different
+   * Processes these criteria with the specified processor. It chains in a given order the different
    * criterion to process.
-   * @param processor the processor to use for processing each criterion in this criteria.
+   * @param processor the processor to use for processing each criterion in these criteria.
    */
   public void processWith(final MediaCriteriaProcessor processor) {
     processor.startProcessing();
@@ -397,9 +367,6 @@ public class MediaCriteria {
     }
     if (!getIdentifiers().isEmpty()) {
       processor.then().processIdentifiers(getIdentifiers());
-    }
-    if (getCreator() != null) {
-      processor.then().processCreator(getCreator());
     }
     if (!getMediaTypes().isEmpty()) {
       processor.then().processMediaTypes(getMediaTypes());

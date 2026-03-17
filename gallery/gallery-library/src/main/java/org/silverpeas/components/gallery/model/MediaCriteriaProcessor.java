@@ -105,13 +105,6 @@ public interface MediaCriteriaProcessor {
   MediaCriteriaProcessor processAlbums(final List<String> albumIds);
 
   /**
-   * Processes the criterion on the creator of the medias.
-   * @param creator the user concerned by the criterion.
-   * @return the processor itself.
-   */
-  MediaCriteriaProcessor processCreator(final UserDetail creator);
-
-  /**
    * Processes the criterion on type of media.
    * @param mediaTypes the media types concerned by the criterion.
    * @return the processor itself.

@@ -100,7 +100,7 @@ public class MediaDAO {
    * @param criteria the media criteria.
    * @return the media list corresponding to the given criteria.
    */
-  public static List<Media> findByCriteria(final MediaCriteria criteria) throws SQLException {
+  public static List<Media>  findByCriteria(final MediaCriteria criteria) throws SQLException {
     MediaSQLQueryBuilder queryBuilder = MediaSQLQueryBuilder.selectBuilder();
     criteria.processWith(queryBuilder);
 

@@ -60,11 +60,6 @@ public class GalleryExporter extends AbstractExportProcess {
    */
   public static final String EXPORT_ALBUM = "gallery.export.album";
 
-  /**
-   * Optional export parameter giving the media identifiers (photo) to be performed.
-   */
-  public static final String EXPORT_PHOTOS = "gallery.export.photos";
-
   private static GalleryService getMediaService() {
     return MediaServiceProvider.getMediaService();
   }
@@ -104,7 +99,7 @@ public class GalleryExporter extends AbstractExportProcess {
    * @param medias the list of medias to export
    * @param tempExportDir the temporary exported directory
    * @param mediaResolution the exported media resolution
-   * @throws IOException
+   * @throws IOException if the zip file generation fails.
    */
   private void prepareZipContent(List<Media> medias, File tempExportDir,
       MediaResolution mediaResolution) throws IOException {

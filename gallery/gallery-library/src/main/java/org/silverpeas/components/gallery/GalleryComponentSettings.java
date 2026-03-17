@@ -89,7 +89,7 @@ public final class GalleryComponentSettings {
 
   /**
    * Gets the max number of media displayed on homepage.
-   * @return
+   * @return the number of media to display
    */
   public static int getNbMediaDisplayedPerPage() {
     return DEFAULT_NBMEDIAS_PER_PAGE;

@@ -35,7 +35,6 @@ import org.silverpeas.core.persistence.jdbc.sql.JdbcSqlQuery;
 import org.silverpeas.core.util.CollectionUtil;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -86,12 +85,12 @@ public class MediaSQLQueryBuilder implements MediaCriteriaProcessor {
     if (distinct) {
       sqlQuery.insert((count ? 13 : 7), "distinct ");
     }
-    sqlQuery.append(from.toString());
+    sqlQuery.append(from);
     if (where.length() > 0) {
-      sqlQuery.append(" where ").append(where.toString());
+      sqlQuery.append(" where ").append(where);
     }
     if (orderBy != null && orderBy.length() > 0) {
-      sqlQuery.append(orderBy.toString());
+      sqlQuery.append(orderBy);
     }
     done = true;
   }
@@ -178,17 +177,7 @@ public class MediaSQLQueryBuilder implements MediaCriteriaProcessor {
       distinct = true;
       from.append(
           "join SC_Gallery_Path A on M.mediaId = A.mediaId and M.instanceId = A.instanceId ");
-      where(conjunction).append("A.nodeId in (").append(params.toString()).append(")");
-      conjunction = "";
-    }
-    return this;
-  }
-
-  @Override
-  public MediaCriteriaProcessor processCreator(UserDetail creator) {
-    if (!done) {
-      where(conjunction).append("M.createdBy = ?");
-      parameters.add(creator.getId());
+      where(conjunction).append("A.nodeId in (").append(params).append(")");
       conjunction = "";
     }
     return this;
@@ -205,7 +194,7 @@ public class MediaSQLQueryBuilder implements MediaCriteriaProcessor {
         params.append("?");
         parameters.add(mediaType.name());
       }
-      where(conjunction).append("M.mediaType in (").append(params.toString()).append(")");
+      where(conjunction).append("M.mediaType in (").append(params).append(")");
       conjunction = "";
     }
     return this;
@@ -259,7 +248,7 @@ public class MediaSQLQueryBuilder implements MediaCriteriaProcessor {
         params.append("?");
         parameters.add(identifier);
       }
-      where(conjunction).append("M.mediaId in (").append(params.toString()).append(")");
+      where(conjunction).append("M.mediaId in (").append(params).append(")");
       conjunction = "";
     }
     return this;
@@ -268,7 +257,7 @@ public class MediaSQLQueryBuilder implements MediaCriteriaProcessor {
   @Override
   public List<Media> orderingResult(final List<Media> media) {
     if (CollectionUtil.isNotEmpty(logicalOrderBy)) {
-      Collections.sort(media, MediaLogicalComparator.on(logicalOrderBy));
+      media.sort(MediaLogicalComparator.on(logicalOrderBy));
     }
     return media;
   }

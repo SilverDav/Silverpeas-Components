@@ -152,7 +152,6 @@ public class GalleryRequestRouter extends ComponentRequestRouter<GallerySessionC
       if (function.startsWith("Main")) {
         // récupération des albums de 1er niveau
         gallerySC.setIndexOfCurrentPage("0");
-
         AlbumDetail root = gallerySC.goToAlbum("0");
         request.setAttribute("root", root);
         request.setAttribute(ALBUMS, gallerySC.addNbMedia(root.getChildrenAlbumsDetails()));
@@ -806,7 +805,8 @@ public class GalleryRequestRouter extends ComponentRequestRouter<GallerySessionC
               Field field = data.getField(fieldName);
               String fieldValue = field.getStringValue();
               if (fieldValue != null && !fieldValue.trim().isEmpty()) {
-                String fieldQuery = fieldValue.trim().replaceAll("##", " AND "); // case à cocher multiple
+                String fieldQuery = fieldValue.trim().replaceAll("##", " AND "); // case à cocher
+                // multiple
                 query.addFieldQuery(
                     new FieldDescription(templateName + "$$" + fieldName, fieldQuery, null));
               }
@@ -946,7 +946,8 @@ public class GalleryRequestRouter extends ComponentRequestRouter<GallerySessionC
             request.setAttribute(NB_MEDIA_PER_PAGE, gallerySC.getNbMediaPerPage());
             request.setAttribute(SELECTED_IDS, gallerySC.getListSelected());
             request.setAttribute(IS_ORDER, gallerySC.isOrder());
-            request.setAttribute(MEDIA_TYPE_ALERT_ATTR, request.getAttribute(MEDIA_TYPE_ALERT_ATTR));
+            request.setAttribute(MEDIA_TYPE_ALERT_ATTR,
+                request.getAttribute(MEDIA_TYPE_ALERT_ATTR));
 
             destination = rootDest + "basket.jsp";
             break;
@@ -1128,7 +1129,8 @@ public class GalleryRequestRouter extends ComponentRequestRouter<GallerySessionC
                         cache.put(downloadUrlKey, u);
                         return sendJson(encodeObject(o -> o.put("downloadId", downloadUrlKey)));
                       }).orElseGet(() -> {
-                        final String errorMessage = gallerySC.getString("gallery.alreadyDownloaded");
+                        final String errorMessage = gallerySC.getString("gallery" +
+                            ".alreadyDownloaded");
                         return sendJson(encodeObject(o -> o.put("errorMessage", errorMessage)));
                       });
                 });
@@ -1141,14 +1143,14 @@ public class GalleryRequestRouter extends ComponentRequestRouter<GallerySessionC
           ExportReport exportRpt =
               gallerySC.exportAlbum(albumId, MediaResolution.fromNameOrLabel(format));
           request.setAttribute("ExportReport", exportRpt);
-          destination = rootDest +"downloadZip.jsp";
+          destination = rootDest + "downloadZip.jsp";
         } else if ("ExportSelection".equals(function)) {
           String format = request.getParameter("format");
           ExportReport exportRpt =
               gallerySC.exportSelection(MediaResolution.fromNameOrLabel(format));
           request.setAttribute("ExportReport", exportRpt);
           gallerySC.clearBasket();
-          destination = rootDest +"downloadZip.jsp";
+          destination = rootDest + "downloadZip.jsp";
         }
       } else {
         destination = rootDest + function;
@@ -1454,6 +1456,7 @@ public class GalleryRequestRouter extends ComponentRequestRouter<GallerySessionC
 
   /**
    * update gallery session controller list of selected elements
+   *
    * @param request the incoming request
    * @param gallerySC the session controller of the Gallery application
    */

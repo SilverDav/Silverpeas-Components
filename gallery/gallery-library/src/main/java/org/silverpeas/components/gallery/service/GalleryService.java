@@ -56,8 +56,6 @@ public interface GalleryService extends ApplicationService {
 
   AlbumDetail getAlbum(NodePK nodePK);
 
-  AlbumDetail getAlbum(NodePK nodePK, MediaCriteria.VISIBILITY visibility);
-
   AlbumDetail createAlbum(AlbumDetail album, NodePK nodePK);
 
   void updateAlbum(AlbumDetail album);
@@ -85,9 +83,13 @@ public interface GalleryService extends ApplicationService {
 
   Collection<Photo> getAllPhotos(NodePK nodePK, MediaCriteria.VISIBILITY visibility);
 
+  /**
+   * Counts the number of media the specified album and all of its children album contain.
+   *
+   * @param nodePK the unique identifier of an album.
+   * @return the total number of media the given album recursively contains.
+   */
   long countAllMedia(NodePK nodePK);
-
-  long countAllMedia(NodePK nodePK, MediaCriteria.VISIBILITY visibility);
 
   Collection<Media> getAllMedia(NodePK nodePK, MediaCriteria.VISIBILITY visibility);
 
@@ -142,6 +144,7 @@ public interface GalleryService extends ApplicationService {
   /**
    * Gets the list of social information about the media for the specified user and in the given
    * period of time.
+   *
    * @param userId the unique identifier of a user
    * @param period interval of time in which the media were created or updated.
    * @return a list of {@link SocialInformation} objects.
@@ -151,6 +154,7 @@ public interface GalleryService extends ApplicationService {
   /**
    * Gets the list of social information of the specified users about all the media in the given
    * component instances and in the specified period of time.
+   *
    * @param listOfUserId a list of unique identifier of users.
    * @param availableComponent a list of unique identifier of component instances.
    * @param period interval of time in which the media were created or updated.

@@ -24,11 +24,11 @@
 
 package org.silverpeas.components.gallery.servlets;
 
-import org.silverpeas.components.gallery.control.GallerySessionController;
+import org.silverpeas.components.gallery.service.GalleryService;
 import org.silverpeas.core.node.model.NodePK;
 import org.silverpeas.kernel.logging.SilverLogger;
 
-import javax.servlet.ServletException;
+import javax.inject.Inject;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,26 +43,25 @@ public class AjaxServlet extends HttpServlet {
 
   private static final long serialVersionUID = 1L;
 
+  @Inject
+  private GalleryService galleryService;
+
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
+      throws IOException {
     // TODO Auto-generated method stub
     doPost(req, resp);
   }
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-      throws ServletException, IOException {
-
+      throws IOException {
     String action = getAction(req);
-    String result = null;
-
     if ("Sort".equals(action)) {
-      result = sort(req);
+      String result = sort(req);
+      Writer writer = resp.getWriter();
+      writer.write(result);
     }
-
-    Writer writer = resp.getWriter();
-    writer.write(result);
   }
 
   private String getAction(HttpServletRequest req) {
@@ -75,14 +74,14 @@ public class AjaxServlet extends HttpServlet {
     String componentId = (String) session.getAttribute("Silverpeas_Album_ComponentId");
 
     StringTokenizer tokenizer = new StringTokenizer(orderedList, ",");
-    List<NodePK> albumPKs = new ArrayList<NodePK>();
+    List<NodePK> albumPKs = new ArrayList<>();
     while (tokenizer.hasMoreTokens()) {
       albumPKs.add(new NodePK(tokenizer.nextToken(), componentId));
     }
 
     // Save album order
     try {
-      GallerySessionController.sortAlbums(albumPKs);
+      galleryService.sortAlbums(albumPKs);
       return "ok";
     } catch (Exception e) {
       SilverLogger.getLogger(this).error(e);

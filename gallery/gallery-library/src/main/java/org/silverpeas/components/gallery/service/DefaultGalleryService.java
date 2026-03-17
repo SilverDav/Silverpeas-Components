@@ -66,11 +66,7 @@ import javax.transaction.Transactional;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.silverpeas.components.gallery.model.MediaCriteria.QUERY_ORDER_BY.CREATE_DATE_DESC;
 import static org.silverpeas.components.gallery.model.MediaCriteria.QUERY_ORDER_BY.IDENTIFIER_DESC;
@@ -114,13 +110,8 @@ public class DefaultGalleryService implements GalleryService {
 
   @Override
   public AlbumDetail getAlbum(final NodePK nodePK) {
-    return getAlbum(nodePK, MediaCriteria.VISIBILITY.BY_DEFAULT);
-  }
-
-  @Override
-  public AlbumDetail getAlbum(final NodePK nodePK, MediaCriteria.VISIBILITY visibility) {
     try {
-      return new AlbumDetail(nodeService.getDetail(nodePK), visibility);
+      return new AlbumDetail(nodeService.getDetail(nodePK), MediaCriteria.VISIBILITY.BY_DEFAULT);
     } catch (final Exception e) {
       throw new GalleryRuntimeException(e);
     }
@@ -245,19 +236,18 @@ public class DefaultGalleryService implements GalleryService {
   }
 
   @Override
-  public long countAllMedia(final NodePK nodePK) {
-    return countAllMedia(nodePK, MediaCriteria.VISIBILITY.BY_DEFAULT);
-  }
-
-  @Override
-  public long countAllMedia(final NodePK nodePK, final MediaCriteria.VISIBILITY visibility) {
+  public long countAllMedia(final NodePK albumPk) {
+    var children = nodeService.getDescendantPKs(albumPk).stream()
+        .distinct()
+        .map(NodePK::getId)
+        .toArray(String[]::new);
+    var albumIds = Arrays.copyOf(children, children.length + 1);
+    albumIds[albumIds.length -1] = albumPk.getId();
     try {
-      final String albumId = nodePK.getId();
-      final String instanceId = nodePK.getInstanceId();
-      return MediaDAO.countByCriteria(MediaCriteria.fromComponentInstanceId(instanceId)
-          .albumIdentifierIsOneOf(albumId)
-          .withVisibility(visibility));
-    } catch (final Exception e) {
+      return MediaDAO.countByCriteria(MediaCriteria.fromComponentInstanceId(albumPk.getInstanceId())
+          .albumIdentifierIsOneOf(albumIds)
+          .withVisibility(MediaCriteria.VISIBILITY.BY_DEFAULT));
+    } catch (SQLException e) {
       throw new GalleryRuntimeException(e);
     }
   }

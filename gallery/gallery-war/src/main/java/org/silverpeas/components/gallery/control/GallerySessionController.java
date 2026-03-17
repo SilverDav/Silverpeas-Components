@@ -30,15 +30,7 @@ import org.silverpeas.components.gallery.constant.MediaType;
 import org.silverpeas.components.gallery.delegate.GalleryPasteDelegate;
 import org.silverpeas.components.gallery.delegate.MediaDataCreateDelegate;
 import org.silverpeas.components.gallery.delegate.MediaDataUpdateDelegate;
-import org.silverpeas.components.gallery.model.AlbumDetail;
-import org.silverpeas.components.gallery.model.GalleryRuntimeException;
-import org.silverpeas.components.gallery.model.InternalMedia;
-import org.silverpeas.components.gallery.model.Media;
-import org.silverpeas.components.gallery.model.MediaPK;
-import org.silverpeas.components.gallery.model.MediaSelection;
-import org.silverpeas.components.gallery.model.MetaData;
-import org.silverpeas.components.gallery.model.Order;
-import org.silverpeas.components.gallery.model.OrderRow;
+import org.silverpeas.components.gallery.model.*;
 import org.silverpeas.components.gallery.service.GalleryService;
 import org.silverpeas.components.gallery.service.MediaServiceProvider;
 import org.silverpeas.components.gallery.web.ExportOptionValue;
@@ -46,7 +38,6 @@ import org.silverpeas.components.gallery.web.MediaSort;
 import org.silverpeas.core.admin.service.OrganizationController;
 import org.silverpeas.core.admin.user.model.SilverpeasRole;
 import org.silverpeas.core.admin.user.model.UserDetail;
-import org.silverpeas.kernel.cache.model.SimpleCache;
 import org.silverpeas.core.clipboard.ClipboardException;
 import org.silverpeas.core.clipboard.ClipboardSelection;
 import org.silverpeas.core.comment.model.Comment;
@@ -77,30 +68,26 @@ import org.silverpeas.core.subscription.service.ComponentSubscriptionResource;
 import org.silverpeas.core.subscription.service.NodeSubscriptionResource;
 import org.silverpeas.core.ui.DisplayI18NHelper;
 import org.silverpeas.core.util.Link;
-import org.silverpeas.kernel.bundle.LocalizationBundle;
-import org.silverpeas.kernel.bundle.ResourceLocator;
-import org.silverpeas.kernel.bundle.SettingBundle;
-import org.silverpeas.kernel.util.StringUtil;
 import org.silverpeas.core.util.URLUtil;
 import org.silverpeas.core.util.WebEncodeHelper;
 import org.silverpeas.core.util.file.FileRepositoryManager;
 import org.silverpeas.core.util.file.FileServerUtils;
-import org.silverpeas.kernel.logging.SilverLogger;
 import org.silverpeas.core.web.mvc.controller.AbstractComponentSessionController;
 import org.silverpeas.core.web.mvc.controller.ComponentContext;
 import org.silverpeas.core.web.mvc.controller.MainSessionController;
 import org.silverpeas.core.web.subscription.SubscriptionContext;
+import org.silverpeas.kernel.annotation.NonNull;
+import org.silverpeas.kernel.bundle.LocalizationBundle;
+import org.silverpeas.kernel.bundle.ResourceLocator;
+import org.silverpeas.kernel.bundle.SettingBundle;
+import org.silverpeas.kernel.cache.model.SimpleCache;
+import org.silverpeas.kernel.logging.SilverLogger;
+import org.silverpeas.kernel.util.StringUtil;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.silverpeas.core.cache.service.CacheAccessorProvider.getSessionCacheAccessor;
 
@@ -108,12 +95,12 @@ public final class GallerySessionController extends AbstractComponentSessionCont
 
   private static final String SUBJECT_NOTIF = "gallery.orderNotifAskSubject";
   private String currentAlbumId = "0";
-  private AlbumDetail currentAlbum = getAlbum(currentAlbumId);
+  private AlbumDetail currentAlbum;
   private int rang = 0;
   private MediaResolution displayedMediaResolution = MediaResolution.SMALL;
   private MediaSort sort = MediaSort.CreationDateDesc;
   private String currentOrderId = "0";
-  private List<String> listSelected = new ArrayList<>();
+  private final List<String> listSelected = new ArrayList<>();
   private boolean isViewNotVisible = false;
   // manage search keyword
   private String searchKeyWord = "";
@@ -137,10 +124,12 @@ public final class GallerySessionController extends AbstractComponentSessionCont
   private static final String MULTILANG_GALLERY_BUNDLE =
       "org.silverpeas.gallery.multilang.galleryBundle";
 
+  private final GalleryService galleryService;
+
   /**
    * Standard Session Controller Constructeur
    *
-   * @param mainSessionCtrl  The user's profile
+   * @param mainSessionCtrl The user's profile
    * @param componentContext The component's profile
    */
   public GallerySessionController(MainSessionController mainSessionCtrl,
@@ -153,6 +142,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
         MediaResolution.fromNameOrLabel(albumResolution) :
         MediaResolution.SMALL;
     setDisplayedMediaResolution(mediaResolution);
+    galleryService = MediaServiceProvider.getMediaService();
+    currentAlbum = getAlbum(currentAlbumId);
   }
 
   /**
@@ -200,8 +191,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
     return currentAlbum;
   }
 
-  public AlbumDetail loadCurrentAlbum() {
-    return goToAlbum(currentAlbumId);
+  public void loadCurrentAlbum() {
+    goToAlbum(currentAlbumId);
   }
 
   public AlbumDetail getAlbum(String albumId) {
@@ -354,8 +345,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
   /**
    * Creating one media (just only one)
    *
-   * @param delegate
-   * @return
+   * @param delegate the creator to which the creation of the media has to be delegated.
+   * @return the unique identifier of the new media.
    */
   public synchronized String createMedia(final MediaDataCreateDelegate delegate) {
     try {
@@ -375,9 +366,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
   /**
    * Updating one media (just only one)
    *
-   * @param mediaId
-   * @param delegate
-   * @throws Exception
+   * @param mediaId the unique identifier of the media to update.
+   * @param delegate the updater to which the media modification has to be delegated.
    */
   public void updateMediaByUser(final String mediaId, final MediaDataUpdateDelegate delegate) {
     // Persisting data
@@ -388,9 +378,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
   /**
    * Updating several media (no file have to be handled)
    *
-   * @param mediaIds
-   * @param delegate
-   * @throws Exception
+   * @param mediaIds the unique identifiers of the media to update
+   * @param delegate the updater to which the media modification has to be delegated.
    */
   public void updateMediaByUser(final Collection<String> mediaIds,
       final MediaDataUpdateDelegate delegate) {
@@ -398,18 +387,6 @@ public final class GallerySessionController extends AbstractComponentSessionCont
       // Persisting data
       getMediaService().updateMedia(getUserDetail(), getComponentId(), mediaIds,
           getCurrentAlbumId(), delegate);
-    }
-  }
-
-  public void updateMedia(final Media media) {
-    try {
-      getMediaService().updateMedia(getUserDetail(), getComponentId(), media, getWatermark(), null);
-
-      // Reloading the current album.
-      loadCurrentAlbum();
-
-    } catch (Exception e) {
-      throw new GalleryRuntimeException(e);
     }
   }
 
@@ -430,8 +407,9 @@ public final class GallerySessionController extends AbstractComponentSessionCont
     loadCurrentAlbum();
   }
 
-  private static GalleryService getMediaService() {
-    return MediaServiceProvider.getMediaService();
+  @NonNull
+  private GalleryService getMediaService() {
+    return this.galleryService;
   }
 
   public List<NodeDetail> getPath(NodePK nodePK) {
@@ -545,10 +523,10 @@ public final class GallerySessionController extends AbstractComponentSessionCont
   public Integer getSlideshowWait() {
     String wait = getComponentParameterValue("slideshow");
     final int defaultWait = 5;
-    if (wait == null || "null".equalsIgnoreCase(wait) || wait.length() == 0) {
+    if (wait == null || "null".equalsIgnoreCase(wait) || wait.isEmpty()) {
       wait = "5";
     }
-    Integer iWait = Integer.parseInt(wait);
+    int iWait = Integer.parseInt(wait);
     if (iWait <= 0) {
       iWait = defaultWait;
     }
@@ -592,15 +570,15 @@ public final class GallerySessionController extends AbstractComponentSessionCont
     setQuery(query);
     setSearchResultListMedia(result);
 
-    // mise à jour du compteur de paginiation
+    // mise à jour du compteur de pagination
     setIndexOfCurrentPage("0");
     return result;
   }
 
   public void sendAskMedia(String asking) {
-    // envoyer une notification au gestionnaire de la médiathèque concernant la
+    // Envoyer une notification au gestionnaire de la médiathèque concernant la
     // demande de média
-    // 1. création du message
+    // 1. Création du message
     OrganizationController orga = getOrganisationController();
     UserDetail[] admins = orga.getUsers(getComponentId(), "admin");
     String user = getUserDetail().getDisplayedName();
@@ -610,9 +588,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
         DisplayI18NHelper.getDefaultLanguage());
 
     String subject = message.getString("gallery.notifAskSubject");
-    StringBuilder messageBody = new StringBuilder();
-    messageBody =
-        messageBody.append(user).append(" ").append(message.getString("gallery.notifBodyAsk"));
+    StringBuilder messageBody = new StringBuilder()
+        .append(user).append(" ").append(message.getString("gallery.notifBodyAsk"));
 
     NotificationMetaData notifMetaData =
         new NotificationMetaData(NotificationParameters.PRIORITY_NORMAL, subject,
@@ -621,9 +598,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
     for (String language : DisplayI18NHelper.getLanguages()) {
       message = ResourceLocator.getLocalizationBundle(MULTILANG_GALLERY_BUNDLE, language);
       subject = message.getString("gallery.notifAskSubject");
-      messageBody = new StringBuilder();
-      messageBody =
-          messageBody.append(user).append(" ").append(message.getString("gallery.notifBodyAsk"));
+      messageBody = new StringBuilder()
+          .append(user).append(" ").append(message.getString("gallery.notifBodyAsk"));
       notifMetaData.addLanguage(language, subject, messageBody.toString());
       notifMetaData.addExtraMessage(asking, language);
 
@@ -635,7 +611,7 @@ public final class GallerySessionController extends AbstractComponentSessionCont
       notifMetaData.addUserRecipient(new UserRecipient(admin));
     }
 
-    // 2. envoie de la notification aux admin
+    // 2. Envoi de la notification aux admins
     notifyUsers(notifMetaData);
   }
 
@@ -655,7 +631,7 @@ public final class GallerySessionController extends AbstractComponentSessionCont
 
   public void setRestrictedListMedia(Collection<Media> restrictedListMedia) {
     this.restrictedListMedia =
-        (restrictedListMedia == null ? null : new ArrayList<Media>(restrictedListMedia));
+        (restrictedListMedia == null ? null : new ArrayList<>(restrictedListMedia));
   }
 
   public List<Media> getSearchResultListMedia() {
@@ -664,7 +640,7 @@ public final class GallerySessionController extends AbstractComponentSessionCont
 
   public void setSearchResultListMedia(Collection<Media> searchResultListMedia) {
     this.searchResultListMedia =
-        (searchResultListMedia == null ? null : new ArrayList<Media>(searchResultListMedia));
+        (searchResultListMedia == null ? null : new ArrayList<>(searchResultListMedia));
   }
 
   public String getSearchKeyWord() {
@@ -758,21 +734,15 @@ public final class GallerySessionController extends AbstractComponentSessionCont
 
 
       Collection<ClipboardSelection> clipObjects = getClipboardSelectedObjects();
-      Map<Object, ClipboardSelection> clipObjectPerformed = new HashMap<>();
       for (ClipboardSelection clipObject : clipObjects) {
         if (clipObject.isDataFlavorSupported(MediaSelection.MediaFlavor)) {
           Media media = (Media) clipObject.getTransferData(MediaSelection.MediaFlavor);
-
           delegate.addMedia(media, clipObject.isCutted());
-          clipObjectPerformed.put(media.getMediaPK(), clipObject);
         }
         if (clipObject.isDataFlavorSupported(NodeSelection.NodeDetailFlavor)) {
           AlbumDetail album =
               (AlbumDetail) clipObject.getTransferData(NodeSelection.NodeDetailFlavor);
-
-
           delegate.addAlbum(album, clipObject.isCutted());
-          clipObjectPerformed.put(album.getNodePK(), clipObject);
         }
       }
 
@@ -785,7 +755,7 @@ public final class GallerySessionController extends AbstractComponentSessionCont
     clipboardPasteDone();
   }
 
-  public long countAllMediaOf(AlbumDetail album) {
+  private long countAllMediaOf(AlbumDetail album) {
     try {
       return getMediaService().countAllMedia(album.getNodePK());
     } catch (Exception e) {
@@ -795,9 +765,9 @@ public final class GallerySessionController extends AbstractComponentSessionCont
   }
 
   public void sendAskOrder(String orderId) {
-    // envoyer une notification au gestionnaire pour le prévenir de la demande
+    // Envoyer une notification au gestionnaire pour le prévenir de la demande
     // de l'utilisateur
-    // 1. création du message
+    // 1. Création du message
 
     OrganizationController orga = getOrganisationController();
     UserDetail[] admins = orga.getUsers(getComponentId(), "admin");
@@ -808,8 +778,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
         DisplayI18NHelper.getDefaultLanguage());
 
     String subject = message.getString(SUBJECT_NOTIF);
-    StringBuilder messageBody = new StringBuilder();
-    messageBody = messageBody.append(user)
+    StringBuilder messageBody = new StringBuilder()
+        .append(user)
         .append(" ")
         .append(message.getString("gallery.orderNotifBodyAsk"))
         .append("\n");
@@ -821,8 +791,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
     for (String language : DisplayI18NHelper.getLanguages()) {
       message = ResourceLocator.getLocalizationBundle(MULTILANG_GALLERY_BUNDLE, language);
       subject = message.getString(SUBJECT_NOTIF);
-      messageBody = new StringBuilder();
-      messageBody = messageBody.append(user)
+      messageBody = new StringBuilder()
+          .append(user)
           .append(" ")
           .append(message.getString("gallery.orderNotifBodyAsk"))
           .append("\n");
@@ -836,7 +806,7 @@ public final class GallerySessionController extends AbstractComponentSessionCont
       notifMetaData.addUserRecipient(new UserRecipient(admin));
     }
 
-    // 2. envoie de la notification aux admin
+    // 2. Envoi de la notification aux admins
     notifyUsers(notifMetaData);
   }
 
@@ -855,8 +825,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
         DisplayI18NHelper.getDefaultLanguage());
 
     String subject = message.getString(SUBJECT_NOTIF);
-    StringBuilder messageBody = new StringBuilder();
-    messageBody = messageBody.append(user)
+    StringBuilder messageBody = new StringBuilder()
+        .append(user)
         .append(" ")
         .append(message.getString("gallery.orderNotifBodyAskOk"))
         .append("\n");
@@ -868,8 +838,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
     for (String language : DisplayI18NHelper.getLanguages()) {
       message = ResourceLocator.getLocalizationBundle(MULTILANG_GALLERY_BUNDLE, language);
       subject = message.getString(SUBJECT_NOTIF);
-      messageBody = new StringBuilder();
-      messageBody = messageBody.append(user)
+      messageBody = new StringBuilder()
+          .append(user)
           .append(" ")
           .append(message.getString("gallery.orderNotifBodyAskOk"))
           .append("\n");
@@ -939,10 +909,6 @@ public final class GallerySessionController extends AbstractComponentSessionCont
     basket.clear();
   }
 
-  public List<String> getBasketMediaIdList() {
-    return basket;
-  }
-
   public List<Media> getBasketMedias() {
     List<Media> medias = new ArrayList<>();
     if (!basket.isEmpty()) {
@@ -993,17 +959,13 @@ public final class GallerySessionController extends AbstractComponentSessionCont
     return StringUtil.EMPTY;
   }
 
-  /**
-   * @param row the order row
-   * @return
-   */
   private String getMediaPhotoUrl(OrderRow row) {
     // on est sur la bonne ligne
     InternalMedia media = getInternalMediaById(row.getMediaId());
     String download = row.getDownloadDecision();
 
     if (!"T".equals(download)) {
-      // le média n'a pas déjà été téléchargé par defaut média sans watermark
+      // le média n'a pas déjà été téléchargé par défaut média sans watermark
       String title = WebEncodeHelper.javaStringToHtmlString(media.getFileName());
       String nomRep = media.getWorkspaceSubFolderName();
       if ("DW".equals(download)) {
@@ -1110,7 +1072,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
   }
 
   public Boolean isOrder() {
-    return !isGuest() && !isAnonymous() && StringUtil.getBooleanValue(getComponentParameterValue("order"));
+    return !isGuest() && !isAnonymous() && StringUtil.getBooleanValue(getComponentParameterValue(
+        "order"));
   }
 
   public boolean isViewNotVisible() {
@@ -1166,7 +1129,7 @@ public final class GallerySessionController extends AbstractComponentSessionCont
     setPDCSearchContext(null);
   }
 
-  protected boolean isAdminOrPublisher(SilverpeasRole userRole) {
+  private boolean isAdminOrPublisher(SilverpeasRole userRole) {
     return userRole.isGreaterThanOrEquals(SilverpeasRole.PUBLISHER);
   }
 
@@ -1179,25 +1142,14 @@ public final class GallerySessionController extends AbstractComponentSessionCont
     return PublicationTemplateManager.getInstance();
   }
 
-  public static void sortAlbums(List<NodePK> albumPKs) {
-    try {
-      getMediaService().sortAlbums(albumPKs);
-    } catch (Exception e) {
-      throw new GalleryRuntimeException(e);
-    }
-  }
-
+  /**
+   * Sets for each of the specified album the total number of media it contains.
+   * @param albums a collection of albums.
+   * @return the collection of the specified albums enriched with the number of media they have.
+   */
   public Collection<AlbumDetail> addNbMedia(Collection<AlbumDetail> albums) {
-    // retourne la liste des albums avec leurs nombre de médias
     for (AlbumDetail album : albums) {
-      // pour chaque sous album, rechercher le nombre de médias
       long nbMedia = countAllMediaOf(album);
-      // parcourir ses sous albums pour comptabiliser aussi ses médias
-      AlbumDetail thisAlbum = getAlbumLight(album.getId());
-      Collection<AlbumDetail> subAlbums = addNbMedia(thisAlbum.getChildrenAlbumsDetails());
-      for (AlbumDetail oneSubAlbum : subAlbums) {
-        nbMedia += oneSubAlbum.getNbMedia();
-      }
       album.setNbMedia(nbMedia);
     }
     return albums;
@@ -1217,8 +1169,9 @@ public final class GallerySessionController extends AbstractComponentSessionCont
   /**
    * Gets a media from the specified identifier.
    *
-   * @param mediaId
-   * @return the instance of the media behinf the specified identifier, null if it does not exist.
+   * @param mediaId the unique identifier of the media.
+   * @return the instance of the media behind the specified identifier
+   * @throws WebApplicationException with Response.Status.NOT_FOUND if the media isn't found
    */
   private Media getMediaById(String mediaId) {
     Media media = getMediaService().getMedia(new MediaPK(mediaId, getComponentId()));
@@ -1229,10 +1182,11 @@ public final class GallerySessionController extends AbstractComponentSessionCont
   }
 
   /**
-   * Gets a, internal media from the specified identifier.
+   * Gets the internal media from the specified identifier.
    *
-   * @param mediaId
-   * @return the instance of the media behinf the specified identifier, null if it does not exist.
+   * @param mediaId the unique identifier of the media.
+   * @return the instance of the media behind the specified identifier.
+   * @throws WebApplicationException with Response.Status.NOT_FOUND if the media isn't found
    */
   private InternalMedia getInternalMediaById(String mediaId) {
     Media media = getMediaService().getMedia(new MediaPK(mediaId, getComponentId()));
@@ -1243,10 +1197,11 @@ public final class GallerySessionController extends AbstractComponentSessionCont
   }
 
   /**
-   * Export all picture from an album with the given resolution
+   * Export all pictures from an album with the given resolution
    *
-   * @param albumId
-   * @param mediaResolution
+   * @param albumId the unique identifier of the album.
+   * @param mediaResolution the resolution with which the images will be exported.
+   * @return the report about the export.
    */
   public ExportReport exportAlbum(String albumId, MediaResolution mediaResolution)
       throws ExportException {
@@ -1255,8 +1210,8 @@ public final class GallerySessionController extends AbstractComponentSessionCont
       // Create export folder then apply each picture from this folder
       ImportExportDescriptor exportDesc =
           new ExportDescriptor().withParameter(GalleryExporter.EXPORT_FOR_USER, getUserDetail())
-              .
-                  withParameter(GalleryExporter.EXPORT_ALBUM, getAlbum(albumId))
+                  .
+              withParameter(GalleryExporter.EXPORT_ALBUM, getAlbum(albumId))
               .withParameter(GalleryExporter.EXPORT_RESOLUTION, mediaResolution);
       aGalleryExporter().exportAlbum(exportDesc, exportReport);
     }
@@ -1264,18 +1219,18 @@ public final class GallerySessionController extends AbstractComponentSessionCont
   }
 
   /**
-   * Gets a new exporter of Kmelia publications.
+   * Gets an exporter of galleries.
    *
-   * @return a KmeliaPublicationExporter instance.
+   * @return a gallery exporter instance.
    */
   public static GalleryExporter aGalleryExporter() {
     return new GalleryExporter();
   }
 
   /**
-   * Export all selected images from basket with the given resolution
+   * Export all selected images in the basket with the given resolution
    *
-   * @param mediaResolution
+   * @param mediaResolution the resolution with which the media will be exported.
    */
   public ExportReport exportSelection(MediaResolution mediaResolution) throws ExportException {
     ExportReport exportReport = new ExportReport();
@@ -1311,10 +1266,10 @@ public final class GallerySessionController extends AbstractComponentSessionCont
   }
 
   /**
-   * Get the resolution preview of the images
+   * Get the resolution preview of the media.
    *
-   * @param media
-   * @return the media resolution on preview
+   * @param media the media
+   * @return the media resolution on preview.
    */
   public MediaResolution getImageResolutionPreview(Media media) {
     SilverpeasRole highestUserRole = this.getHighestSilverpeasUserRole();
