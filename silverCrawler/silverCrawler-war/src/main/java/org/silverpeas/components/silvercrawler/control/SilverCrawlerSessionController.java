@@ -35,7 +35,7 @@ import org.silverpeas.components.silvercrawler.model.SilverCrawlerRuntimeExcepti
 import org.silverpeas.components.silvercrawler.statistic.HistoryByUser;
 import org.silverpeas.components.silvercrawler.statistic.HistoryDetail;
 import org.silverpeas.components.silvercrawler.statistic.Statistic;
-import org.silverpeas.components.silvercrawler.util.FileServerUtils;
+import org.silverpeas.components.silvercrawler.util.CrawlerFileServerUtils;
 import org.silverpeas.core.admin.component.model.ComponentInst;
 import org.silverpeas.core.admin.component.model.Parameter;
 import org.silverpeas.core.admin.service.AdminException;
@@ -230,7 +230,7 @@ public class SilverCrawlerSessionController extends AbstractComponentSessionCont
     if (sizeOk) {
       try {
         zipSize = ZipUtil.compressPathToZip(downloadPath, zipFile);
-        url = FileServerUtils
+        url = CrawlerFileServerUtils
             .getSilverCrawlerUrl(zipFile.getName(), zipFile.getName(), getComponentId(),
                 downloadPath.getPath().substring(getRootPath().length()));
         zipInfo.setFileZip(zipFile.getName());
