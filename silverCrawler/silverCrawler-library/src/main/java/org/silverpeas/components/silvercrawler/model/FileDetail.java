@@ -24,7 +24,7 @@
 
 package org.silverpeas.components.silvercrawler.model;
 
-import org.silverpeas.components.silvercrawler.util.FileServerUtils;
+import org.silverpeas.components.silvercrawler.util.CrawlerFileServerUtils;
 import org.silverpeas.core.util.file.FileRepositoryManager;
 
 public class FileDetail implements java.io.Serializable {
@@ -65,7 +65,7 @@ public class FileDetail implements java.io.Serializable {
   }
 
   public String getFileURL(String componentId) {
-    return FileServerUtils.getSilverCrawlerUrl(name, path, componentId);
+    return CrawlerFileServerUtils.getSilverCrawlerUrl(name, path, componentId);
   }
 
   public boolean isIsDirectory() {
