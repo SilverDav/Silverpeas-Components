@@ -121,25 +121,25 @@
     }
 
     function ifCorrectAnswersExecute(callback) {
-      var errorMsg = "";
-      var errorNb = 0;
-      var answerEmpty = false;
-      var imageEmpty = false;
-      var fieldsEmpty = "";
-      if ($("#questionStyle").val() != "open") {
+      let errorMsg = "";
+      let errorNb = 0;
+      let answerEmpty = false;
+      let imageEmpty = false;
+      let fieldsEmpty = "";
+      if ($("#questionStyle").val() !== "open") {
 
         for (var i=0; i<document.surveyForm.length; i++)
         {
           inputName = document.surveyForm.elements[i].name.substring(0, 5);
-          if (inputName == "answe" ) {
+          if (inputName === "answe" ) {
             if (isWhitespace(stripInitialWhitespace(document.surveyForm.elements[i].value))) {
               answerEmpty = true;
             }
           }
 
-          if (inputName == "image")
+          if (inputName === "image")
           {
-            if (answerEmpty == true) {
+            if (answerEmpty === true) {
               if (isWhitespace(stripInitialWhitespace(document.surveyForm.elements[i].value))) {
                 imageEmpty = true;
               }
@@ -147,9 +147,9 @@
             answerEmpty = false;
           }
 
-          if (inputName == "value")
+          if (inputName === "value")
           {
-            if (imageEmpty == true) {
+            if (imageEmpty === true) {
               if (isWhitespace(stripInitialWhitespace(document.surveyForm.elements[i].value))) {
                 fieldsEmpty += (parseInt(document.surveyForm.elements[i].name.substring(17, document.surveyForm.elements[i].name.length))+1)+",";
                 errorNb++;
@@ -169,7 +169,7 @@
           callback.call(this);
           break;
         default :
-          fields = fieldsEmpty.split(",");
+          const fields = fieldsEmpty.split(",");
           for (var i=0; i < fields.length-1; i++) {
             errorMsg += "<fmt:message key="SurveyCreationAnswerNb" /> "+fields[i]+" \n";
           }
@@ -183,22 +183,24 @@
     }
 
     function ifCorrectFormExecute(callback) {
-      var errorMsg = "";
-      var errorNb = 0;
-      var question = stripInitialWhitespace(document.surveyForm.question.value);
-      var nbAnswers = document.surveyForm.nbAnswers.value;
+      let errorMsg = "";
+      let errorNb = 0;
+      const question = stripInitialWhitespace(document.surveyForm.question.value);
+      const nbAnswers = document.surveyForm.nbAnswers.value;
       if (isWhitespace(question)) {
         errorMsg+="  - <fmt:message key="GML.theField"/> '<fmt:message key="SurveyCreationQuestion"/>' <fmt:message key="GML.MustBeFilled"/>\n";
         errorNb++;
       }
-      if (document.surveyForm.questionStyle.options[document.surveyForm.questionStyle.selectedIndex].value=="null") {
+      if
+      (document.surveyForm.questionStyle.options[document.surveyForm.questionStyle.selectedIndex].value==="null" ||
+          document.surveyForm.questionStyle.options[document.surveyForm.questionStyle.selectedIndex].value === null) {
         //choisir au moins un style
         errorMsg+="  - <fmt:message key="GML.theField"/> '<fmt:message key="survey.style"/>' <fmt:message key="GML.MustBeFilled"/> \n";
         errorNb++;
       }
       else
       {
-        if (document.surveyForm.questionStyle.options[document.surveyForm.questionStyle.selectedIndex].value != "open") {
+        if (document.surveyForm.questionStyle.options[document.surveyForm.questionStyle.selectedIndex].value !== "open") {
           //Closed Question
           if (isWhitespace(nbAnswers)) {
             errorMsg +="  - <fmt:message key="GML.theField"/> '<fmt:message key="SurveyCreationNbPossibleAnswer"/>' <fmt:message key="GML.MustBeFilled"/>\n";
@@ -248,22 +250,22 @@
       document.surveyForm.submit();
     }
 
-    var galleryWindow = window;
-    var currentAnswer;
+    let galleryWindow = window;
+    let currentAnswer;
 
     function choixGallery(liste, idAnswer)
     {
       currentAnswer = idAnswer;
       index = liste.selectedIndex;
-      var componentId = liste.options[index].value;
-      if (index != 0)
+      const componentId = liste.options[index].value;
+      if (index !== 0)
       {
-        url = "<c:out value="${ctxPath}"/>/gallery/jsp/wysiwygBrowser.jsp?ComponentId="+componentId+"&Language=<%=surveyScc.getLanguage()%>";
-        windowName = "galleryWindow";
-        larg = "820";
-        haut = "600";
-        windowParams = "directories=0,menubar=0,toolbar=0, alwaysRaised";
-        if (!galleryWindow.closed && galleryWindow.name=="galleryWindow") {
+        const url = "<c:out value="${ctxPath}"/>/gallery/jsp/wysiwygBrowser.jsp?ComponentId="+componentId+"&Language=<%=surveyScc.getLanguage()%>";
+        const windowName = "galleryWindow";
+        const larg = "820";
+        const haut = "600";
+        const windowParams = "directories=0,menubar=0,toolbar=0, alwaysRaised";
+        if (!galleryWindow.closed && galleryWindow.name === "galleryWindow") {
           galleryWindow.close();
         }
         galleryWindow = SP_openWindow(url, windowName, larg, haut, windowParams);
@@ -281,17 +283,17 @@
 
       deleteImage(currentAnswer);
 
-      var newLink = document.createElement("img");
+      const newLink = document.createElement("img");
       newLink.setAttribute("src", url);
       newLink.setAttribute("height", "40px");
       newLink.setAttribute("align", "top");
 
-      var newLabel = document.createTextNode("<fmt:message key="survey.imageGallery"/>");
+      const newLabel = document.createTextNode("<fmt:message key="survey.imageGallery"/>");
       newLink.appendChild(newLabel);
 
-      var removeLink =  document.createElement("a");
+      const removeLink = document.createElement("a");
       removeLink.setAttribute("href", "javascript:deleteImage('"+currentAnswer+"')");
-      var removeIcon = document.createElement("img");
+      const removeIcon = document.createElement("img");
       removeIcon.setAttribute("src", '<c:out value="${ctxPath}"/>/util/icons/delete.gif');
       removeIcon.setAttribute("border", "0");
       removeIcon.setAttribute("align", "top");
@@ -308,18 +310,18 @@
 
     /**
      * This method display the answer given the answer type
-     * @param value : the answer type
+     * @param value : string the answer type
      */
     function showQuestionOptions(value) {
-      if (value == "open" || value == "null") {
+      if (value === "open" || value === "null" || value === null) {
         $("tr[id*=answerNotOpen]").hide();
         $("#suggestionTRId").hide();
       } else {
-        if ("${answerType}"=="open") {
+        if ("${answerType}" === "open") {
           $("#nbAnswersId").val("2");
           nbAnswerForm = 2;
         }
-        if (value == "list") {
+        if (value === "list") {
           $("tr[id*=answerNotOpen]").show();
           $("tr[id*=answerNotOpenImage]").hide();
           $("tr[id*=answerNotOpenGallery]").hide();
@@ -332,7 +334,7 @@
     }
 
     // Global variable declaration
-    var nbAnswerForm = <c:out value="${answerNb}"/>;
+    let nbAnswerForm = <c:out value="${answerNb}"/>;
 
     $(document).ready(function() {
       $( "#dialog" ).dialog({
@@ -344,8 +346,9 @@
 
 
     function windowAlert(message) {
-      $("#dialogId").html(message);
-      $("#dialogId").dialog("open");
+      const dialog = $("#dialogId");
+      dialog.html(message);
+      dialog.dialog("open");
       return false;
     }
 
@@ -359,22 +362,21 @@
 
     /**
      * This method add or remove answer respecting the number of answer to display
-     * @param nbAnswer: the number of answer to diplay
+     * @param nbAnswer : string the number of answer to display
      */
     function udpateListAnswer(nbAnswer) {
-//      alert("Nombre de reponse(s) = " + nbAnswer + " compare to " +  nbAnswerForm);
-      var curNbAnswer = parseInt(nbAnswer);
+      const curNbAnswer = parseInt(nbAnswer);
       ifCorrectFormExecute(function() {
         if (curNbAnswer > nbAnswerForm) {
           // Add new answer form
-          for (var cptAnswer = nbAnswerForm; cptAnswer < nbAnswer; cptAnswer++) {
-            var insertId = parseInt(cptAnswer) - 1;
+          for (let cptAnswer = nbAnswerForm; cptAnswer < nbAnswer; cptAnswer++) {
+            const insertId = parseInt(cptAnswer) - 1;
             //alert("Add new answer cptAnswer= " + cptAnswer + "insertAfterId = answerNotOpenGallery" + insertId);
             insertHTMLAnswer(cptAnswer);
           }
         } else if (curNbAnswer < nbAnswerForm) {
           // Remove answer form
-          for (var cptAnswer = nbAnswerForm; cptAnswer >= nbAnswer; cptAnswer--) {
+          for (let cptAnswer = nbAnswerForm; cptAnswer >= nbAnswer; cptAnswer--) {
             //alert("removing element id= " + cptAnswer);
             $("#answerNotOpenGallery" + cptAnswer).remove();
             $("#answerNotOpenImage" + cptAnswer).remove();
@@ -383,10 +385,6 @@
         }
         //Update global variable
         nbAnswerForm = parseInt(nbAnswer);
-//        alert("valeur courante de nbAnswerForm = " + nbAnswerForm);
-        //Display data
-        //alert("nbAnswer="+nbAnswer+" nbAnswerForm="+nbAnswerForm);
-        //showQuestionOptions($("#questionStyle").val());
       });
     }
     /**
@@ -395,10 +393,10 @@
      * because there is a problem adding element that already has been removed
      */
     function insertHTMLAnswer(answerId) {
-      var insertAfterIndex = answerId - 1;
-      var addIndex = parseInt(answerId) + 1;
+      const insertAfterIndex = answerId - 1;
+      const addIndex = parseInt(answerId) + 1;
 
-      var htmlAnswer= '<tr><td>&nbsp;</td></tr><tr id="answerNotOpenAnswerNb' + answerId + '">';
+      let htmlAnswer = '<tr><td>&nbsp;</td></tr><tr id="answerNotOpenAnswerNb' + answerId + '">';
       htmlAnswer += '  <td class="txtlibform"><fmt:message key="SurveyCreationAnswerNb" />&nbsp;' + (addIndex) + ' :</td>';
       htmlAnswer += '  <td><input type="text" name="<c:out value="answer' + answerId + '"/>" value="" size="60" maxlength="<%=DBUtil.getTextFieldLength() %>"></td>';
       htmlAnswer += '</tr>';
@@ -417,7 +415,7 @@
       htmlAnswer +=  '<input type="hidden" id="valueImageGallery' + answerId + '" name="valueImageGallery' + answerId + '" />';
       <c:set var="gallery" value="${requestScope['Gallery']}" />
       <c:if test="${not empty(gallery)}">
-      htmlAnswer +=  '<select id="galleries" name="galleries" onchange="javascript:choixGallery(this, \'' + answerId + '\');this.selectedIndex=0;">';
+      htmlAnswer +=  '<select id="galleries" name="galleries" onchange="choixGallery(this, \'' + answerId + '\');this.selectedIndex=0;">';
       <fmt:message key="GML.thumbnail.galleries" var="labelGalleries" />
       htmlAnswer +=  '<option selected=\"selected\">${silfn:escapeJs(labelGalleries)}</option>';
       <c:forEach var="curGal" items="${gallery}" varStatus="galIndex">
@@ -447,7 +445,7 @@
   <fmt:message var="bbElt" key="SurveyUpdate"/>
   <c:set var="bbElt" value="${bbElt} '${surveyName}'" />
   <view:browseBar extraInformations="${browseBarLabel}">
-    <view:browseBarElt label="${bbElt}" link="javascript:backQuestions();"></view:browseBarElt>
+    <view:browseBarElt label="${bbElt}" link="javascript:backQuestions();"/>
   </view:browseBar>
 
   <view:window>
@@ -457,31 +455,32 @@
             <c:when test="${requestScope['UpdateSucceed']}">
               <div class="inlineMessage-ok">
                 <fmt:message key="survey.update.succeed" />
-              </div><br clear="all"/>
+              </div><br />
             </c:when>
           </c:choose>
 
           <!-- SURVEY FORM BEGIN -->
           <form name="surveyForm" action="manageQuestions.jsp" method="post" enctype="multipart/form-data">
             <table>
+              <th></th>
               <tr>
-                <td class="txtlibform" width="30%"><fmt:message key="SurveyCreationQuestion"/> <c:out value="${nbQuestion}" /> :</td>
-                <td width="70%">
-                  <input type="text" name="question" value="<view:encodeHtml string="${questionLabel}" />" size="60" maxlength="<%=DBUtil.getTextFieldLength()%>">&nbsp;<img border="0" src="<%=mandatoryField%>" width="5" height="5">
+                <td class="txtlibform"><fmt:message key="SurveyCreationQuestion"/> <c:out value="${nbQuestion}" /> :</td>
+                <td>
+                  <input type="text" name="question" value="<view:encodeHtml string="${questionLabel}" />" size="60" maxlength="<%=DBUtil.getTextFieldLength()%>">&nbsp;<img alt="mandatory" src="<%=mandatoryField%>" width="5" height="5">
                 </td>
               </tr>
 
               <tr><%-- Question STYLE --%>
-                <td class="txtlibform" valign="top"><fmt:message key="survey.style" /> :</td>
+                <td class="txtlibform"><fmt:message key="survey.style" /> :</td>
                 <td>
-                  <select id="questionStyle" name="questionStyle" onchange="javascript:showQuestionOptions(this.value);">
+                  <select id="questionStyle" name="questionStyle" onchange="showQuestionOptions(this.value);">
                     <option value="null"></option>
                     <c:forEach var="curStyle" items="${styles}" >
                       <c:set var="styleSelected" value=""/>
                       <c:if test="${curStyle == answerType}">
                         <c:set var="styleSelected" value="selected"/>
                       </c:if>
-                      <fmt:message var="styleLabel" key="survey.${curStyle}"></fmt:message>
+                      <fmt:message var="styleLabel" key="survey.${curStyle}"/>
                       <option <c:out value="${styleSelected}"/> value="<c:out value="${curStyle}" />"><c:out value="${styleLabel}"/></option>
                     </c:forEach>
                   </select>
@@ -494,20 +493,20 @@
                   <tr id="answerNotOpenPA">
                     <td class="txtlibform"><fmt:message key="SurveyCreationNbPossibleAnswer" /> :</td>
                     <td>
-                      <input type="text" name="nbAnswers" id="nbAnswersId" value="<c:out value="${answerNb}"/>" size="3" onchange="javascript:udpateListAnswer(this.value);" />
+                      <input type="text" name="nbAnswers" id="nbAnswersId" value="<c:out value="${answerNb}"/>" size="3" onchange="udpateListAnswer(this.value);" />
                       &nbsp;<img src="<%=mandatoryField%>" alt="<%=resources.getString("GML.requiredField")%>" width="5" height="5"/>
                     </td>
                   </tr>
-                  <tr id="answerNotOpenSA">
+                  <tr>
                     <td class="txtlibform"><fmt:message key="SuggestionAllowed" /> :</td>
-                    <td><input type="checkbox" name="suggestion" value="" <c:out value="${suggestionCheckLabel}"/> onchange="javascript:updateQuestionForm();"/></td>
+                    <td><input type="checkbox" name="suggestion" value="" <c:out value="${suggestionCheckLabel}"/> onchange="updateQuestionForm();"/></td>
                   </tr>
 
                   <c:forEach var="answer" items="${answers}" varStatus="answerStatus">
                     <c:if test="${!answer.opened}">
                       <tr><td>&nbsp;</td></tr>
 
-                      <tr id="answerNotOpenAnswerNb<c:out value="${answerStatus.index}"/>">
+                      <tr id="answerNotOpenAnswerNb<c:out value='${answerStatus.index}'/>">
                         <td class="txtlibform"><fmt:message key="SurveyCreationAnswerNb" />&nbsp;<c:out value="${answerStatus.index + 1}"/> :</td>
                         <td><input type="text" name="<c:out value="answer${answerStatus.index}"/>" value="<c:out value="${answer.label}"/>" size="60" maxlength="<%=DBUtil.getTextFieldLength() %>">
                         </td>
@@ -528,8 +527,7 @@
                         <td></td>
                           <%-- Check if an image already exist in the answer --%>
                         <c:set var="imageUrl" value=""/>
-                        <c:choose>
-                          <c:when test="${not empty answer.image}">
+                          <c:if test="${not empty answer.image}">
                             <c:choose>
                               <c:when test="${fn:startsWith(answer.image, '/')}">
                                 <c:set var="imageUrl" value="${answer.image}"/>
@@ -539,21 +537,18 @@
                                 <c:set var="imageUrl" value="${fn:replace(imageUrl, 'REPLACE_FILE_NAME', answer.image)}"/>
                               </c:otherwise>
                             </c:choose>
-                          </c:when>
-                          <c:otherwise></c:otherwise>
-                        </c:choose>
-
+                          </c:if>
                         <td>
               <span id="imageGallery<c:out value="${answerStatus.index}"/>">
               <c:if test="${not empty imageUrl}">
-                <img src="<c:out value="${imageUrl}"/>" border="0" height="40px" align="top"/>
-                <a href="javascript:deleteImage('<c:out value="${answerStatus.index}"/>')"><img border="0" src="<c:out value="${ctxPath}"/>/util/icons/delete.gif" align="top" alt="<fmt:message key="GML.delete"/>" title="<fmt:message key="GML.delete"/>"></a>
+                <img alt="question icon" src="<c:out value="${imageUrl}"/>" height="40px"/>
+                <a href="javascript:deleteImage('<c:out value="${answerStatus.index}"/>')"><img src="<c:out value="${ctxPath}"/>/util/icons/delete.gif" alt="<fmt:message key="GML.delete"/>" title="<fmt:message key="GML.delete"/>"></a>
               </c:if>
               </span>
                           <input type="hidden" id="valueImageGallery<c:out value="${answerStatus.index}"/>" name="valueImageGallery<c:out value="${answerStatus.index}"/>" value="<c:out value="${answer.image}"/>" />
                           <c:set var="gallery" value="${requestScope['Gallery']}" />
                           <c:if test="${not empty(gallery)}">
-                            <select id="galleries" name="galleries" onchange="javascript:choixGallery(this, '<c:out value="${answerStatus.index}"/>');this.selectedIndex=0;">
+                            <select name="galleries" onchange="choixGallery(this, '<c:out value="${answerStatus.index}"/>');this.selectedIndex=0;">
                               <option selected><fmt:message key="GML.thumbnail.galleries" /></option>
                               <c:forEach var="curGal" items="${gallery}" varStatus="galIndex">
                                 <option value="<c:out value="${curGal.id}"/>"><c:out value="${curGal.label}"/></option>
@@ -570,12 +565,12 @@
                   <tr id="answerNotOpenPA" style="display:none;">
                     <td class="txtlibform"><fmt:message key="SurveyCreationNbPossibleAnswer" /> :</td>
                     <td>
-                      <input type="text" name="nbAnswers" id="nbAnswersId" value="<c:out value="${answerNb}"/>" size="3" onchange="javascript:udpateListAnswer(this.value);" />
+                      <input type="text" name="nbAnswers" id="nbAnswersId" value="<c:out value="${answerNb}"/>" size="3" onchange="udpateListAnswer(this.value);" />
                     </td>
                   </tr>
-                  <tr id="answerNotOpenSA" style="display:none;">
+                  <tr style="display:none;">
                     <td class="txtlibform"><fmt:message key="SuggestionAllowed" /> :</td>
-                    <td><input type="checkbox" name="suggestion" value="" <c:out value="${suggestionCheckLabel}"/>  onchange="javascript:updateQuestionForm();"/></td>
+                    <td><input type="checkbox" name="suggestion" value="" <c:out value="${suggestionCheckLabel}"/>  onchange="updateQuestionForm();"/></td>
                   </tr>
                   <tr id="answerNotOpenAnswerNb0" style="display:none;">
                     <td class="txtlibform"><fmt:message key="SurveyCreationAnswerNb" />&nbsp;1 :</td>
@@ -593,7 +588,7 @@
                       <input type="hidden" id="valueImageGallery0" name="valueImageGallery0" />
                       <c:set var="gallery" value="${requestScope['Gallery']}" />
                       <c:if test="${not empty(gallery)}">
-                        <select id="galleries" name="galleries" onchange="javascript:choixGallery(this, '0');this.selectedIndex=0;">
+                        <select name="galleries" onchange="choixGallery(this, '0');this.selectedIndex=0;">
                           <option selected><fmt:message key="GML.thumbnail.galleries" /></option>
                           <c:forEach var="curGal" items="${gallery}" varStatus="galIndex">
                             <option value="<c:out value="${curGal.id}"/>"><c:out value="${curGal.label}"/></option>
@@ -617,7 +612,7 @@
                       <input type="hidden" id="valueImageGallery1" name="valueImageGallery1" />
                       <c:set var="gallery" value="${requestScope['Gallery']}" />
                       <c:if test="${not empty(gallery)}">
-                        <select id="galleries" name="galleries" onchange="javascript:choixGallery(this, '1');this.selectedIndex=0;">
+                        <select id="galleries" name="galleries" onchange="choixGallery(this, '1');this.selectedIndex=0;">
                           <option selected><fmt:message key="GML.thumbnail.galleries" /></option>
                           <c:forEach var="curGal" items="${gallery}" varStatus="galIndex">
                             <option value="<c:out value="${curGal.id}"/>"><c:out value="${curGal.label}"/></option>
@@ -634,10 +629,11 @@
                 <c:set var="displaySuggestion" value="" />
               </c:if>
               <tr>
-                <td colspan="2" align="center">
-                  <table cellpadding="0" cellspacing="5" width="100%">
+                <td colspan="2">
+                  <table>
+                    <th></th>
                     <tr>
-                      <td class="intfdcolor"><img src="<%=px%>"></td>
+                      <td class="intfdcolor"><img alt="1px space" src="<%=px%>"></td>
                     </tr>
                   </table>
                 </td>
@@ -670,11 +666,13 @@
         </view:board>
       </center>
       <br/>
-      <fmt:message key="GML.cancel" var="cancelButtonLabel"></fmt:message>
-      <fmt:message key="GML.validate" var="validateButtonLabel"></fmt:message>
+      <fmt:message key="GML.cancel" var="cancelButtonLabel"/>
+      <fmt:message key="GML.validate" var="validateButtonLabel"/>
       <view:buttonPane>
-        <view:button label="${validateButtonLabel}" action="javascript:sendData();" disabled="false"></view:button>
-        <view:button label="${cancelButtonLabel}" action="javascript:onClick=cancelUpdate();" disabled="false"></view:button>
+        <view:button label="${validateButtonLabel}" action="javascript:sendData();"
+                     disabled="false"/>
+        <view:button label="${cancelButtonLabel}" action="javascript:onClick=cancelUpdate();"
+                     disabled="false"/>
       </view:buttonPane>
     </view:frame>
   </view:window>
