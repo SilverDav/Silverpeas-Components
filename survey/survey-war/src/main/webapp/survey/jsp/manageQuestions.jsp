@@ -464,6 +464,7 @@
           <!-- SURVEY FORM BEGIN -->
           <form name="surveyForm" action="manageQuestions.jsp" method="post" enctype="multipart/form-data">
             <table>
+              <th></th>
               <tr>
                 <td class="txtlibform" width="30%"><fmt:message key="SurveyCreationQuestion"/> <c:out value="${nbQuestion}" /> :</td>
                 <td width="70%">
@@ -637,7 +638,7 @@
                 <td colspan="2" align="center">
                   <table cellpadding="0" cellspacing="5" width="100%">
                     <tr>
-                      <td class="intfdcolor"><img src="<%=px%>"></td>
+                      <td class="intfdcolor"><img alt="1px space" src="<%=px%>"></td>
                     </tr>
                   </table>
                 </td>
