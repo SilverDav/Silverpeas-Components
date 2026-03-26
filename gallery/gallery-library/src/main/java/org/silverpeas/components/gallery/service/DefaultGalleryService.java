@@ -110,8 +110,13 @@ public class DefaultGalleryService implements GalleryService {
 
   @Override
   public AlbumDetail getAlbum(final NodePK nodePK) {
+    return getAlbum(nodePK, MediaCriteria.VISIBILITY.BY_DEFAULT);
+  }
+
+  @Override
+  public AlbumDetail getAlbum(NodePK nodePK, MediaCriteria.VISIBILITY visibility) {
     try {
-      return new AlbumDetail(nodeService.getDetail(nodePK), MediaCriteria.VISIBILITY.BY_DEFAULT);
+      return new AlbumDetail(nodeService.getDetail(nodePK), visibility);
     } catch (final Exception e) {
       throw new GalleryRuntimeException(e);
     }

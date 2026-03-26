@@ -27,13 +27,7 @@ import org.silverpeas.components.gallery.Watermark;
 import org.silverpeas.components.gallery.delegate.GalleryPasteDelegate;
 import org.silverpeas.components.gallery.delegate.MediaDataCreateDelegate;
 import org.silverpeas.components.gallery.delegate.MediaDataUpdateDelegate;
-import org.silverpeas.components.gallery.model.AlbumDetail;
-import org.silverpeas.components.gallery.model.Media;
-import org.silverpeas.components.gallery.model.MediaCriteria;
-import org.silverpeas.components.gallery.model.MediaPK;
-import org.silverpeas.components.gallery.model.Order;
-import org.silverpeas.components.gallery.model.OrderRow;
-import org.silverpeas.components.gallery.model.Photo;
+import org.silverpeas.components.gallery.model.*;
 import org.silverpeas.core.ApplicationService;
 import org.silverpeas.core.admin.user.model.UserDetail;
 import org.silverpeas.core.contribution.model.ContributionIdentifier;
@@ -54,7 +48,20 @@ public interface GalleryService extends ApplicationService {
   @SuppressWarnings("unchecked")
   Optional<Media> getContributionById(final ContributionIdentifier contributionId);
 
+  /**
+   * Gets the album represented by the specified node.
+   * @param nodePK the unique identifier of a {@link NodeDetail}
+   * @return the album with the default visibility.
+   */
   AlbumDetail getAlbum(NodePK nodePK);
+
+  /**
+   * Gets the album represented by the specified node and with the given visibility.
+   * @param nodePK the unique identifier of a {@link NodeDetail}
+   * @param visibility the visibility of the album
+   * @return the album with the specified visibility.
+   */
+  AlbumDetail getAlbum(NodePK nodePK, MediaCriteria.VISIBILITY visibility);
 
   AlbumDetail createAlbum(AlbumDetail album, NodePK nodePK);
 
@@ -62,6 +69,12 @@ public interface GalleryService extends ApplicationService {
 
   void deleteAlbum(UserDetail user, String componentInstanceId, NodePK nodePK);
 
+  /**
+   * Gets all the albums of the specified Gallery instance. The album will have the default
+   * visibility.
+   * @param instanceId the unique identifier of the component instance.
+   * @return a collection of media albums.
+   */
   Collection<AlbumDetail> getAllAlbums(String instanceId);
 
   void removeMediaFromAllAlbums(Media media);

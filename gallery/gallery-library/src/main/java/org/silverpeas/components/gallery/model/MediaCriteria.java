@@ -45,8 +45,30 @@ import static org.silverpeas.components.gallery.model.MediaCriteria.VISIBILITY.F
  */
 public class MediaCriteria {
 
+  /**
+   * Visibility of media albums.
+   */
   public enum VISIBILITY {
-    BY_DEFAULT, VISIBLE_ONLY, HIDDEN_ONLY, FORCE_GET_ALL
+    /**
+     * Default visibility: publishers and admins can see all the albums (and hence the media they
+     * contain). For any other roles, the users can see only the visible albums.
+     */
+    BY_DEFAULT,
+
+    /**
+     * Only the media in visible albums.
+     */
+    VISIBLE_ONLY,
+
+    /**
+     * Only the media in hidden albums.
+     */
+    HIDDEN_ONLY,
+
+    /**
+     * All the media, whatever the visibility of the album.
+     */
+    FORCE_GET_ALL
   }
 
   public enum QUERY_ORDER_BY {
